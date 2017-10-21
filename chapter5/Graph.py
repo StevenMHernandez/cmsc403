@@ -32,13 +32,10 @@ class Graph(Canvas):
         return data_max_height
 
     def get_data_height_sum(self):
-        sum = 0
+        height_sum = 0
         for d in self.data:
-            sum += d[0]
-        return sum
-
-    def graph(self):
-        print("Cannot graph type 'Graph'")
+            height_sum += d[0]
+        return height_sum
 
 
 class GraphBar(Graph):
@@ -69,9 +66,9 @@ class GraphPie(Graph):
     PADDING = 10
 
     def graph(self):
-        sum = self.get_data_height_sum()
+        height_sum = self.get_data_height_sum()
 
-        degree_ratio = 360 / sum
+        degree_ratio = 360 / height_sum
 
         degree_offset = 0
 
@@ -82,13 +79,13 @@ class GraphPie(Graph):
 
             radius_width = ((self.width - (2 * self.PADDING)) / 2) - self.PADDING
             radius_height = ((self.height - (2 * self.PADDING)) / 2) - self.PADDING
+            angle_radians = -degrees_to_radians((degree_calculated / 2) + degree_offset)
 
-            self.create_text(
-                (math.cos(- degrees_to_radians((degree_calculated / 2) + degree_offset)) * radius_width) + (
-                    self.width / 2),
-                (math.sin(- degrees_to_radians((degree_calculated / 2) + degree_offset)) * radius_height) + (
-                    self.height / 2),
-                text=d[1], font="Times 10 bold underline", tags="string")
+            text_color = "black" if d[2] != "black" else "gray"
+
+            self.create_text((math.cos(angle_radians) * radius_width) + (self.width / 2),
+                             (math.sin(angle_radians) * radius_height) + (self.height / 2),
+                             text=d[1], font="Times 10 bold underline", tags="string", fill=text_color)
 
             degree_offset += degree_calculated
 
@@ -98,11 +95,17 @@ def degrees_to_radians(degree):
 
 
 def main():
-    GraphBar([[6, "A’s", "blue"], [7, "B’s", "yellow"], [4, "C’s", "green"], [2, "F’s", "red"]], 312, 223)
-    GraphBar([[140, "Freshman", "red"], [130, "Sophomore", "blue"], [150, "Junior", "yellow"], [80, "Senior", "green"]],
-             312, 223)
-    GraphPie([[6, "A’s", "blue"], [7, "B’s", "yellow"], [4, "C’s", "green"], [2, "F’s", "red"]], 222, 222)
-    GraphPie([[6, "A’s", "blue"], [6, "B’s", "yellow"], [6, "C’s", "green"], [6, "F’s", "red"]], 222, 222)
+    infile = open("graphData.txt", "r")
+    line = infile.readline()
+    while line != '':
+        chart_type, data, width, height = line.split('\t')
+        print(data)
+        if chart_type == "bar":
+            GraphBar(eval(data), int(width), int(height))
+        else:  # we can assume perfect input, so this is pie
+            GraphPie(eval(data), int(width), int(height))
+
+        line = infile.readline()
 
 
 if __name__ == "__main__":
